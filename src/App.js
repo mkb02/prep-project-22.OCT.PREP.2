@@ -13,8 +13,7 @@ function App() {
       .then(res => res.json())
       .then(
         (result) => {
-          // result['cod'] !== 200
-          if (1 !== 1) { // redundant conditional, as above "result['cod'] !== 200" mysteriously doesn't work currently, despite being met each time
+          if (parseInt(result['cod']) !== 200) {
             setIsLoaded(false)
           } else {
             setIsLoaded(true);
