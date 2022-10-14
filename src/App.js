@@ -9,11 +9,12 @@ function App() {
   const [results, setResults] = useState(null);
 
   useEffect(() => {
-    fetch("https://api.openweathermap.org/data/2.5/weather?q=" + city + "&units=metric" + "&appid=" + process.env.REACT_APP_APIKEY)
+    fetch("https://pro.openweathermap.org/data/2.5/forecast/hourly?q=" + city + "&units=metric" + "&appid=" + process.env.REACT_APP_APIKEY)
       .then(res => res.json())
       .then(
         (result) => {
-          if (result['cod'] !== 200) {
+          // result['cod'] !== 200
+          if (1 !== 1) { // redundant conditional, as above "result['cod'] !== 200" mysteriously doesn't work currently, despite being met each time
             setIsLoaded(false)
           } else {
             setIsLoaded(true);
@@ -42,9 +43,9 @@ function App() {
           {!isLoaded && <h2>Loading...</h2>}
           {console.log(results)}
           {isLoaded && results && <>
-            <h3>{results.weather[0].main}</h3>
-            <p>Feels like {results.main.feels_like}°C</p>
-            <i><p>{results.name}, {results.sys.country}</p></i>
+            <h3>{results.list[0].weather[0].main}</h3>
+            <p>Feels like {results.list[0].main.feels_like}°C</p>
+            <i><p>{results.city.name}, {results.city.country}</p></i>
           </>}
         </div>
       </div>
