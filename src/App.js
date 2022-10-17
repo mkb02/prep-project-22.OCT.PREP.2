@@ -56,4 +56,14 @@ function App() {
   }
 }
 
+function adjustDateTime(datetimeInUTC) {
+  // const offset = new Date().getTimezoneOffset();  -> might not need this
+  var date = new Date(datetimeInUTC*1000); 
+
+  console.log(date.toString());
+  console.log(date.toLocaleString());
+
+  return date.toLocaleString();
+}
+
 export default App;
