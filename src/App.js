@@ -61,9 +61,8 @@ function adjustDateTime(datetimeInUTC) {
   var date = new Date(datetimeInUTC*1000); 
 
   console.log(date.toString());
-  console.log(date.toLocaleString());
 
-  return date.toLocaleString();
+  return date.toString();
 }
 
 export default App;
