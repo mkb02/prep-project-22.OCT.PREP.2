@@ -13,12 +13,7 @@ function App() {
   }
 
   const formatTime = (time) => {
-    // return time
-    if (time > 12) {
-      return `${time - 12}PM`
-    } else {
-      return `${time}AM`
-    } 
+    return (time > 12) ? `${time - 12}PM` : `${time}AM`
   }
 
   const showDates = (object) => {
@@ -26,7 +21,7 @@ function App() {
     let hoursOfSelectedDay = [];
     for (let i = 0; i < object.length - 1; i++) {
       let date = object[i].dt_txt.slice(0, 10)
-      if (!arr.includes(date)) {
+      if (!arr.includes(date)) { 
         arr.push(date);
       }
     }
@@ -38,7 +33,8 @@ function App() {
         hoursOfSelectedDay.push(copyObject[i]);
       }
     }
-    return console.log(hoursOfSelectedDay);
+    console.log(arr);
+    console.log(hoursOfSelectedDay);
   }
 
   useEffect(() => {
