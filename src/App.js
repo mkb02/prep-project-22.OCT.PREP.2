@@ -7,6 +7,8 @@ function App() {
   const [isLoaded, setIsLoaded] = useState(false);
   const [city, setCity] = useState("New York City")
   const [results, setResults] = useState(null);
+  const [activeHour, setActiveHour] = useState(null);
+  const ref = useRef(); 
   
 
   const formatDate = (date) => {
@@ -29,11 +31,10 @@ function App() {
     }
 }
 
-let arr;
+let arr = [];
 
 const pullHours = (listObject) => {
   let hourlyItem = listObject.dt_txt.slice(0, 10)
-  arr = [];
   if (hourlyItem.includes(activeDate)) {
     arr.push(listObject);
   }
@@ -46,8 +47,6 @@ const pullHours = (listObject) => {
       activeDate = dateArray[0];
       pullHours(object[i])
     }
-
-    // setHourlyArray(arr);
   }
 
   useEffect(() => {
@@ -60,8 +59,9 @@ const pullHours = (listObject) => {
           } else {
             setIsLoaded(true);
             setResults(result);
-            // console.log(showDates(results.list))
-            // console.log(dateArray)
+            showDates(results.list);
+            setActiveHour(arr[0]);
+            console.log(activeHour);
           }
         },
         (error) => {
@@ -71,12 +71,22 @@ const pullHours = (listObject) => {
       )
   }, [city])
 
+  // useEffect(() => {
+  //   arr = [];
+  //   for (let i = 0; i < 95; i++) {
+  //     pullHours(results.list[i])
+  //   }
+  // })
+
+  // const handleHourClick = () => {
+  //   setActiveHour(ref.current.hour);
+  // }
+
   if (error) {
     return <div>Error: {error.message}</div>;
   } else {
     showDates(results.list);
-    // console.log(hourlyArray);
-    // console.log(dateArray)
+    console.log(activeHour);
     return <>
       <img className="logo" src={logo} alt="MLH Prep Logo"></img>
       <div>
@@ -89,10 +99,10 @@ const pullHours = (listObject) => {
           {!isLoaded && <h2>Loading...</h2>}
           {/* {console.log(results)} */}
           {isLoaded && results && <>
-            <h3>{results.list[0].weather[0].main}</h3>
-            <p>Feels like {results.list[0].main.feels_like}°C</p>
+            <h3>{activeHour.weather[0].main}</h3>
+            <p>Feels like {activeHour.main.feels_like}°C</p>
             <i><p>{results.city.name}, {results.city.country}</p></i>
-            <i><p>{formatDate(results.list[0])} | {formatTime(results.list[0])}</p></i>
+            <i><p>{formatDate(activeHour)} | {formatTime(activeHour)}</p></i>
             <div>
               <div >
                 <button>{dateArray[0]}</button>
@@ -102,7 +112,7 @@ const pullHours = (listObject) => {
                 <button>{dateArray[4]}</button>
               </div>
               <select>
-                {dateArray.map(hourItem => <option ref="">{hourItem}</option>)}
+                {arr.map(hourItem => <option ref={ref} hour={hourItem}>{formatTime(hourItem)}</option>)}
               </select>
             </div>
           </>}
