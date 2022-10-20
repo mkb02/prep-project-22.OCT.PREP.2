@@ -9,33 +9,44 @@ function App() {
   const [results, setResults] = useState(null);
 
   const formatDate = (date) => {
+    date = date.dt_txt.slice(5, 10)
     return date.replace("-", "/")
-  }
+  } 
 
   const formatTime = (time) => {
+    time = parseInt(time.dt_txt.slice(11,13), 10)
     return (time > 12) ? `${time - 12}PM` : `${time}AM`
   }
 
-  const showDates = (object) => {
-    let arr = [];
-    let hoursOfSelectedDay = [];
-    for (let i = 0; i < object.length - 1; i++) {
-      let date = object[i].dt_txt.slice(0, 10)
-      if (!arr.includes(date)) { 
-        arr.push(date);
-      }
+  let arr = [];
+
+  const pullDates = (listObject) => {
+    let date = listObject.dt_txt.slice(0, 10);
+    if (!arr.includes(date)) { 
+      arr.push(date);
     }
-    let copyObject = object.slice();
-    for (let i = 0; i < copyObject.length - 1; i++) {
-      let hourlyItem = copyObject[i].dt_txt.slice(0, 10)
-      let selectedDate = arr[1]
-      if (hourlyItem.includes(selectedDate)) {
-        hoursOfSelectedDay.push(copyObject[i]);
-      }
-    }
-    console.log(arr);
-    console.log(hoursOfSelectedDay);
+}
+
+const pullHours = (listObject) => {
+  let hourlyItem = listObject.dt_txt.slice(0, 10)
+  let selectedDate = arr[3]
+  if (hourlyItem.includes(selectedDate)) {
+    
   }
+}
+
+  const showDates = (object) => {
+    for (let i = 0; i < object.length - 1; i++) {
+      console.log(object[i])
+      pullDates(object[i])
+      pullHours(object[i])
+      console.log(`Object ${i} is ${pullDates(object[i])}`)
+      console.log(`Object ${i} is ${pullHours(object[i])}`)
+      // console.log(pullHours(object[i]))
+    }
+  }
+
+  // console.log(showDates(results.list))
 
   useEffect(() => {
     fetch("https://pro.openweathermap.org/data/2.5/forecast/hourly?q=" + city + "&units=metric" + "&appid=" + process.env.REACT_APP_APIKEY)
@@ -47,7 +58,8 @@ function App() {
           } else {
             setIsLoaded(true);
             setResults(result);
-            console.log(showDates(results.list))
+            // console.log(showDates(results.list))
+            // console.log(arr)
           }
         },
         (error) => {
@@ -60,6 +72,8 @@ function App() {
   if (error) {
     return <div>Error: {error.message}</div>;
   } else {
+    showDates(results.list);
+    console.log(arr)
     return <>
       <img className="logo" src={logo} alt="MLH Prep Logo"></img>
       <div>
@@ -75,7 +89,22 @@ function App() {
             <h3>{results.list[0].weather[0].main}</h3>
             <p>Feels like {results.list[0].main.feels_like}°C</p>
             <i><p>{results.city.name}, {results.city.country}</p></i>
-            <i><p>{formatDate(results.list[0].dt_txt.slice(5, 10))} | {formatTime(results.list[0].dt_txt.slice(11, 13))}</p></i>
+            <i><p>{formatDate(results.list[0])} | {formatTime(results.list[0])}</p></i>
+            <div>
+              <div>
+                <button>{arr[0]}</button>
+                <button>{arr[1]}</button>
+                <button>{arr[2]}</button>
+                <button>{arr[3]}</button>
+                <button>{arr[4]}</button>
+              </div>
+              <select>
+                <option>{formatTime(results.list[0])}</option>
+                <option>{formatTime(results.list[1])}</option>
+                <option>{formatTime(results.list[2])}</option>
+                <option>{formatTime(results.list[3])}</option>
+              </select>
+            </div>
           </>}
         </div>
       </div>
