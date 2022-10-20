@@ -78,9 +78,9 @@ const pullHours = (listObject) => {
   //   }
   // })
 
-  // const handleHourClick = () => {
-  //   setActiveHour(ref.current.hour);
-  // }
+  const handleHourClick = () => {
+    setActiveHour(ref.current.hour);
+  }
 
   if (error) {
     return <div>Error: {error.message}</div>;
@@ -112,7 +112,7 @@ const pullHours = (listObject) => {
                 <button>{dateArray[4]}</button>
               </div>
               <select>
-                {arr.map(hourItem => <option ref={ref} hour={hourItem}>{formatTime(hourItem)}</option>)}
+                {arr.map(hourItem => <option ref={ref} hour={hourItem} onClick={handleHourClick}>{formatTime(hourItem)}</option>)}
               </select>
             </div>
           </>}
