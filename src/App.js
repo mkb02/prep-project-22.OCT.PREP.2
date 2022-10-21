@@ -42,6 +42,7 @@ const pullHours = (listObject) => {
 }
 
   const showDates = (object) => {
+    console.log('show dates')
     for (let i = 0; i < object.length - 1; i++) {
       pullDates(object[i])
       activeDate = dateArray[0];
@@ -58,35 +59,39 @@ const pullHours = (listObject) => {
             setIsLoaded(false)
           } else {
             setIsLoaded(true);
+            console.log("result")
             setResults(result);
-            showDates(results.list);
+            showDates(result.list);
             setActiveHour(arr[0]);
-            console.log(activeHour);
           }
         },
         (error) => {
           setIsLoaded(true);
           setError(error);
         }
-      )
-  }, [city])
+      ).catch((err)=>{
+        console.log("Error fetch")
+        console.log(err)
+      })
+  },[])
 
-  // useEffect(() => {
-  //   arr = [];
-  //   for (let i = 0; i < 95; i++) {
-  //     pullHours(results.list[i])
-  //   }
-  // })
+  const handleDateClick = (event) => {
+    
+  }
 
-  const handleHourClick = () => {
-    setActiveHour(ref.current.hour);
+  const handleHourClick = (event) => {
+    // setActiveHour(hourItem);
+    // console.log(event.target.value);
+    // console.log(arr[event.target.value])
+    setActiveHour(arr[event.target.value])
+    // console.log(activeHour)
   }
 
   if (error) {
-    return <div>Error: {error.message}</div>;
+    return <div>Error: {error.message}</div>;   
   } else {
-    showDates(results.list);
-    console.log(activeHour);
+    if(results && activeHour){
+      showDates(results.list);
     return <>
       <img className="logo" src={logo} alt="MLH Prep Logo"></img>
       <div>
@@ -111,15 +116,16 @@ const pullHours = (listObject) => {
                 <button>{dateArray[3]}</button>
                 <button>{dateArray[4]}</button>
               </div>
-              <select>
-                {arr.map(hourItem => <option ref={ref} hour={hourItem} onClick={handleHourClick}>{formatTime(hourItem)}</option>)}
+              <select onChange={(event) => handleHourClick(event)} >
+                {arr.map((hourItem,i) => <option ref={ref} value={i} >{formatTime(hourItem)}</option>)}
               </select>
             </div>
           </>}
         </div>
       </div>
     </>
-  }
+  }else return <>Loading ...</>
+}
 }
 
 export default App;
