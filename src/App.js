@@ -8,20 +8,25 @@ function App() {
   const [city, setCity] = useState("New York City")
   const [results, setResults] = useState(null);
   const [activeHour, setActiveHour] = useState(null);
+  const [activeDate, setActiveDate] = useState(null);
   const ref = useRef(); 
   
 
   const formatDate = (date) => {
     date = date.dt_txt.slice(5, 10)
+    let num = 2; 
+    date = "2022-10-21" 
     return date.replace("-", "/")
   } 
 
   const formatTime = (time) => {
-    time = parseInt(time.dt_txt.slice(11,13), 10)
-    return (time > 12) ? `${time - 12}PM` : `${time}AM`
-  }
+    console.log(time)
+    let returnedTime = parseInt(time.dt_txt.slice(10, 13), 10);
+    // let returnedTime = 13 
+    return (returnedTime > 12) ? `${returnedTime - 12}PM` : `${returnedTime}AM`
+  } 
 
-  let activeDate;
+  // let activeDate;
   let dateArray = [];
 
   const pullDates = (listObject) => {
@@ -42,11 +47,9 @@ const pullHours = (listObject) => {
 }
 
   const showDates = (object) => {
-    console.log('show dates')
     for (let i = 0; i < object.length - 1; i++) {
       pullDates(object[i])
-      activeDate = dateArray[0];
-      pullHours(object[i])
+      pullHours(object[i]) 
     }
   }
 
@@ -57,12 +60,22 @@ const pullHours = (listObject) => {
         (result) => {
           if (parseInt(result['cod']) !== 200) {
             setIsLoaded(false)
-          } else {
+          } else { 
             setIsLoaded(true);
-            console.log("result")
+            // console.log(result);
             setResults(result);
-            showDates(result.list);
+            for (let i = 0; i < result.list.length - 1; i++) {
+              pullDates(result.list[i]);
+            }
+            setActiveDate(dateArray[0]);
+            for (let i = 0; i < result.list.length - 1; i++) {
+              pullHours(result.list[i]);
+            } 
+            console.log(arr)   
+            console.log(arr[0])
             setActiveHour(arr[0]);
+            console.log(activeDate)
+            // console.log(activeHour)
           }
         },
         (error) => {
@@ -72,26 +85,27 @@ const pullHours = (listObject) => {
       ).catch((err)=>{
         console.log("Error fetch")
         console.log(err)
-      })
-  },[])
+      }) 
+  }, [city])
 
   const handleDateClick = (event) => {
-    
+    setActiveDate(dateArray[event.target.value])
+    arr = [];
+    for (let i = 0; i < results.list.length - 1; i++) {
+      pullHours(results.list[i]);
+    }
+    setActiveHour(arr[0]);
   }
 
   const handleHourClick = (event) => {
-    // setActiveHour(hourItem);
-    // console.log(event.target.value);
-    // console.log(arr[event.target.value])
     setActiveHour(arr[event.target.value])
-    // console.log(activeHour)
   }
 
   if (error) {
     return <div>Error: {error.message}</div>;   
   } else {
-    if(results && activeHour){
-      showDates(results.list);
+    if(results && activeHour) {
+    showDates(results.list);
     return <>
       <img className="logo" src={logo} alt="MLH Prep Logo"></img>
       <div>
@@ -109,15 +123,12 @@ const pullHours = (listObject) => {
             <i><p>{results.city.name}, {results.city.country}</p></i>
             <i><p>{formatDate(activeHour)} | {formatTime(activeHour)}</p></i>
             <div>
-              <div >
-                <button>{dateArray[0]}</button>
-                <button>{dateArray[1]}</button>
-                <button>{dateArray[2]}</button>
-                <button>{dateArray[3]}</button>
-                <button>{dateArray[4]}</button>
+              <div onChange={(event) => handleDateClick(event)}>
+                {dateArray.map((dateItem, i) => <button ref={ref} value={i} >{formatDate(dateItem)}</button>)}
               </div>
+
               <select onChange={(event) => handleHourClick(event)} >
-                {arr.map((hourItem,i) => <option ref={ref} value={i} >{formatTime(hourItem)}</option>)}
+                {arr.map((hourItem, i) => <option ref={ref} value={i} >{formatTime(hourItem)}</option>)}
               </select>
             </div>
           </>}
