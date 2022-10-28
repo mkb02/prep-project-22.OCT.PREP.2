@@ -1,8 +1,4 @@
-<<<<<<< Updated upstream
-import { useEffect, useState } from "react";
-=======
 import { useCallback, useEffect, useState } from "react";
->>>>>>> Stashed changes
 import './App.css';
 import logo from './mlh-prep.png'
 import createDebug from 'debug'
@@ -16,22 +12,6 @@ function App() {
   const [isLoaded, setIsLoaded] = useState(true);
   const [city, setCity] = useState("New York City")
   const [results, setResults] = useState(null);
-<<<<<<< Updated upstream
-
-  useEffect(() => {
-    fetch("https://pro.openweathermap.org/data/2.5/forecast/hourly?q=" + city + "&units=metric" + "&appid=" + process.env.REACT_APP_APIKEY)
-      .then(res => res.json())
-      .then(
-        (result) => {
-          if (parseInt(result['cod']) !== 200) {
-            setIsLoaded(false)
-          } else {
-            setIsLoaded(true);
-            setResults(result);
-          }
-        },
-        (error) => {
-=======
   const [activeResult, setActiveResult] = useState(null)
   const [activeDate, setActiveDate] = useState(null)
   const [activeTime, setActiveTime] = useState(null)
@@ -41,16 +21,16 @@ function App() {
     const _log = log.extend('format-time')
     _log('Formatting date:', date)
 
-    if(!date.dt_txt) return date
-    date = date.dt_txt.slice(5, 10)
+    // if(!date.dt_txt) return date
+    date = date.slice(5, 10)
     return date.replace("-", "/")
   } 
 
   const formatTime = (time) => {
     const _log = log.extend('format-time')
     _log(time)
-    let returnedTime = parseInt(time.dt_txt.slice(10, 13), 10);
-    return (returnedTime > 12) ? `${returnedTime - 12}PM` : `${returnedTime}AM`
+    time = parseInt(time.slice(0, 2));
+    return (time > 12) ? `${time - 12}PM` : `${time}AM`
   } 
 
 
@@ -80,39 +60,10 @@ function App() {
               resultMap[date] = [time]
             }
           })
->>>>>>> Stashed changes
           setIsLoaded(true);
           setResults(result)
           setMap(resultMap);
         }
-<<<<<<< Updated upstream
-      )
-  }, [city])
-
-  if (error) {
-    return <div>Error: {error.message}</div>;
-  } else {
-    return <>
-      <img className="logo" src={logo} alt="MLH Prep Logo"></img>
-      <div>
-        <h2>Enter a city below 👇</h2>
-        <input
-          type="text"
-          value={city}
-          onChange={event => setCity(event.target.value)} />
-        <div className="Results">
-          {!isLoaded && <h2>Loading...</h2>}
-          {console.log(results)}
-          {isLoaded && results && <>
-            <h3>{results.list[0].weather[0].main}</h3>
-            <p>Feels like {results.list[0].main.feels_like}°C</p>
-            <i><p>{results.city.name}, {results.city.country}</p></i>
-          </>}
-        </div>
-      </div>
-    </>
-  }
-=======
       },
       (error) => {
         _log('FETCH ERROR:', error)
@@ -152,6 +103,9 @@ function App() {
     )
   }
 
+  console.log(activeDate)
+  console.log(activeTime)
+
   return <>
     <img className="logo" src={logo} alt="MLH Prep Logo"></img>
     <div>
@@ -165,7 +119,7 @@ function App() {
           <h3>{activeResult.weather[0].main}</h3>
           <p>Feels like {activeResult.main.feels_like}°C</p>
           <i><p>{results.city.name}, {results.city.country}</p></i>
-          <i><p>{activeDate} | {activeTime}</p></i>
+          <i><p>{formatDate(activeDate)} | {formatTime(activeTime)}</p></i>
  
         {Object.keys(map).map((date, i) => <button onClick={()=> setActiveDate(date)} >{date}</button>)}
         <br />
@@ -173,7 +127,6 @@ function App() {
       </div>
     </div>
   </>
->>>>>>> Stashed changes
 }
 
 export default App;
