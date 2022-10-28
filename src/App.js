@@ -1,142 +1,132 @@
-import { useEffect, useState, useRef } from "react";
+import { useCallback, useEffect, useState } from "react";
 import './App.css';
 import logo from './mlh-prep.png'
+import createDebug from 'debug'
+const log = createDebug('prep2:app')
+createDebug.enable('prep2:*')
+
+
 
 function App() {
   const [error, setError] = useState(null);
-  const [isLoaded, setIsLoaded] = useState(false);
+  const [isLoaded, setIsLoaded] = useState(true);
   const [city, setCity] = useState("New York City")
   const [results, setResults] = useState(null);
-  const [activeHour, setActiveHour] = useState(null);
-  const [activeDate, setActiveDate] = useState(null);
-  const ref = useRef(); 
-  
+  const [activeResult, setActiveResult] = useState(null)
+  const [activeDate, setActiveDate] = useState(null)
+  const [activeTime, setActiveTime] = useState(null)
+  const [map, setMap] = useState(null)
 
   const formatDate = (date) => {
-    date = date.dt_txt.slice(5, 10)
-    let num = 2; 
-    date = "2022-10-21" 
+    const _log = log.extend('format-time')
+    _log('Formatting date:', date)
+
+    // if(!date.dt_txt) return date
+    date = date.slice(5, 10)
     return date.replace("-", "/")
   } 
 
   const formatTime = (time) => {
-    console.log(time)
-    let returnedTime = parseInt(time.dt_txt.slice(10, 13), 10);
-    // let returnedTime = 13 
-    return (returnedTime > 12) ? `${returnedTime - 12}PM` : `${returnedTime}AM`
+    const _log = log.extend('format-time')
+    _log(time)
+    time = parseInt(time.slice(0, 2));
+    return (time > 12) ? `${time - 12}PM` : `${time}AM`
   } 
 
-  // let activeDate;
-  let dateArray = [];
 
-  const pullDates = (listObject) => {
-    let date = listObject.dt_txt.slice(0, 10);
-    if (!dateArray.includes(date)) { 
-      dateArray.push(date);
-    }
-}
 
-let arr = [];
+  const loadData = (city) => {
+    const _log = log.extend('load-data')
 
-const pullHours = (listObject) => {
-  let hourlyItem = listObject.dt_txt.slice(0, 10)
-  if (hourlyItem.includes(activeDate)) {
-    arr.push(listObject);
-  }
-  return arr;
-}
-
-  const showDates = (object) => {
-    for (let i = 0; i < object.length - 1; i++) {
-      pullDates(object[i])
-      pullHours(object[i]) 
-    }
-  }
-
-  useEffect(() => {
     fetch("https://pro.openweathermap.org/data/2.5/forecast/hourly?q=" + city + "&units=metric" + "&appid=" + process.env.REACT_APP_APIKEY)
-      .then(res => res.json())
-      .then(
-        (result) => {
-          if (parseInt(result['cod']) !== 200) {
-            setIsLoaded(false)
-          } else { 
-            setIsLoaded(true);
-            // console.log(result);
-            setResults(result);
-            for (let i = 0; i < result.list.length - 1; i++) {
-              pullDates(result.list[i]);
+    .then(res => res.json())
+    .then(
+      (result) => {
+        if (!result || !result.list || !result.list.length) {
+          _log('Result NOT OK') 
+          setIsLoaded(false)
+        } else { 
+          _log('Result OK', result)
+
+          let resultMap = {}
+
+          result.list.forEach(item => {
+            let split = item.dt_txt.split(' ')
+            let date = split[0]
+            let time = split[1]
+            if(date in resultMap && !resultMap[date].includes(time)){
+              resultMap[date].push(time)
+            }else{
+              resultMap[date] = [time]
             }
-            setActiveDate(dateArray[0]);
-            for (let i = 0; i < result.list.length - 1; i++) {
-              pullHours(result.list[i]);
-            } 
-            console.log(arr)   
-            console.log(arr[0])
-            setActiveHour(arr[0]);
-            console.log(activeDate)
-            // console.log(activeHour)
-          }
-        },
-        (error) => {
+          })
           setIsLoaded(true);
-          setError(error);
+          setResults(result)
+          setMap(resultMap);
         }
+      },
+      (error) => {
+        _log('FETCH ERROR:', error)
+        setIsLoaded(true);
+        setError(error);
+      }
       ).catch((err)=>{
-        console.log("Error fetch")
-        console.log(err)
-      }) 
-  }, [city])
+      _log('CAUGHT ERROR:', err)
+      setIsLoaded(false)
+      setError(err)
+    }) 
+  }
 
-  const handleDateClick = (event) => {
-    setActiveDate(dateArray[event.target.value])
-    arr = [];
-    for (let i = 0; i < results.list.length - 1; i++) {
-      pullHours(results.list[i]);
+  useEffect(()=>{
+    if(map){
+      setActiveDate(Object.entries(map)[0][0])
+      setActiveTime(Object.entries(map)[0][1][0])
     }
-    setActiveHour(arr[0]);
+  },[map])
+
+  useEffect(()=>{
+    if(activeDate && activeTime){
+      setActiveResult(results.list.find(item => item.dt_txt === `${activeDate} ${activeTime}`))
+    }
+  },[activeDate, activeTime])
+
+
+  if(!city || !activeResult){
+    return(
+      <>
+       <input
+        type="text"
+        value={city}
+        onChange={event => setCity(event.target.value)} />
+        <button onClick={() => loadData(city)}>Search</button>
+      </>
+    )
   }
 
-  const handleHourClick = (event) => {
-    setActiveHour(arr[event.target.value])
-  }
+  console.log(activeDate)
+  console.log(activeTime)
 
-  if (error) {
-    return <div>Error: {error.message}</div>;   
-  } else {
-    if(results && activeHour) {
-    showDates(results.list);
-    return <>
-      <img className="logo" src={logo} alt="MLH Prep Logo"></img>
-      <div>
-        <h2>Enter a city below 👇</h2>
-        <input
-          type="text"
-          value={city}
-          onChange={event => setCity(event.target.value)} />
-        <div className="Results">
-          {!isLoaded && <h2>Loading...</h2>}
-          {/* {console.log(results)} */}
-          {isLoaded && results && <>
-            <h3>{activeHour.weather[0].main}</h3>
-            <p>Feels like {activeHour.main.feels_like}°C</p>
-            <i><p>{results.city.name}, {results.city.country}</p></i>
-            <i><p>{formatDate(activeHour)} | {formatTime(activeHour)}</p></i>
-            <div>
-              <div onChange={(event) => handleDateClick(event)}>
-                {dateArray.map((dateItem, i) => <button ref={ref} value={i} >{formatDate(dateItem)}</button>)}
-              </div>
-
-              <select onChange={(event) => handleHourClick(event)} >
-                {arr.map((hourItem, i) => <option ref={ref} value={i} >{formatTime(hourItem)}</option>)}
-              </select>
-            </div>
-          </>}
-        </div>
+  return <>
+    <img className="logo" src={logo} alt="MLH Prep Logo"></img>
+    <div>
+      <h2>Enter a city below 👇</h2>
+      <input
+        type="text"
+        value={city}
+        onChange={event => setCity(event.target.value)} />
+        <button onClick={() => loadData(city)}>Search</button>
+      <div className="Results">
+          <h3>{activeResult.weather[0].main}</h3>
+          <p>Feels like {activeResult.main.feels_like}°C</p>
+          <i><p>{results.city.name}, {results.city.country}</p></i>
+          <i><p>{formatDate(activeDate)} | {formatTime(activeTime)}</p></i>
+ 
+        {Object.keys(map).map((date, i) => <button onClick={()=> setActiveDate(date)} >{date}</button>)}
+        <br />
+        {map[activeDate].map((time, i) => <button onClick={()=> setActiveTime(time)} >{time}</button>)} 
       </div>
-    </>
-  }else return <>Loading ...</>
-}
+    </div>
+  </>
 }
 
 export default App;
