@@ -123,7 +123,9 @@ function App() {
  
         {Object.keys(map).map((date, i) => <button onClick={()=> setActiveDate(date)} >{date}</button>)}
         <br />
-        {map[activeDate].map((time, i) => <button onClick={()=> setActiveTime(time)} >{time}</button>)} 
+        <select>
+          {map[activeDate].map((time, i) => <option onClick={()=> setActiveTime(time)} >{time}</option>)} 
+        </select>
       </div>
     </div>
   </>
